@@ -1,0 +1,19 @@
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ .Values.appName }}
+  annotations:
+    route.openshift.io/termination: edge
+spec:
+  rules:
+    - host: {{ .Values.url }}
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ .Values.appName }}
+                port:
+                  number: {{ .Values.containerPort }}
