@@ -13,11 +13,11 @@ help:
 
 .PHONY: build
 build:
-	docker build -t $(IMAGE) .
+	cd ./src && docker build -t $(IMAGE) .
 
 .PHONY: run
 run:
-	docker run --rm --name $(CONTAINER) -p $(PORT):5000 $(IMAGE)
+	cd ./src && docker run --rm --name $(CONTAINER) -p $(PORT):5000 $(IMAGE)
 
 .PHONY: clean
 clean:
