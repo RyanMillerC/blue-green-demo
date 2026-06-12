@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Demo</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: #0033cc;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-family: Arial, sans-serif;
+        }
+
+        h1 {
+            color: white;
+            font-size: 5rem;
+            font-weight: bold;
+            letter-spacing: 0.4em;
+            margin: 2rem 0;
+        }
+
+        #image-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #main-image {
+            width: 340px;
+            height: 340px;
+            object-fit: contain;
+        }
+
+        #no-images {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 1.2rem;
+            font-style: italic;
+        }
+
+        #countdown {
+            position: fixed;
+            bottom: 1.5rem;
+            right: 1.5rem;
+            color: white;
+            -webkit-font-smoothing: antialiased;
+            font-size: 3rem;
+            font-weight: bold;
+            letter-spacing: 0.05em;
+            background: rgba(0, 0, 0, 0.25);
+            padding: 1rem 2rem;
+            border-radius: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>DEMO</h1>
+    <div id="image-container">
+        <img id="main-image" src="" alt="Demo image" style="display:none;" />
+        <p id="no-images" style="display:none;">No images found in /images</p>
+    </div>
+    <h1>DEMO</h1>
+    <div id="countdown">5s</div>
+
+    <script>
+        const REFRESH_SECONDS = 5;
+        let secondsLeft = REFRESH_SECONDS;
+        let imageList = [];
+        let isReconnecting = false;
+        let reconnectAttempts = 0;
+
+        async function fetchImageList() {
+            const response = await fetch('/images-list');
+            imageList = await response.json();
+        }
+
+        function showRandomImage() {
+            const imgEl = document.getElementById('main-image');
+            const noImgEl = document.getElementById('no-images');
+            const groverImages = imageList.filter(f => f.startsWith('grover-'));
+            if (groverImages.length === 0) {
+                noImgEl.style.display = 'block';
+                imgEl.style.display = 'none';
+                return;
+            }
+            const pick = groverImages[Math.floor(Math.random() * groverImages.length)];
+            imgEl.src = `/images/${encodeURIComponent(pick)}`;
+            imgEl.style.display = 'block';
+            noImgEl.style.display = 'none';
+        }
+
+        function showErrorImage() {
+            const imgEl = document.getElementById('main-image');
+            imgEl.src = '/images/error.png';
+            imgEl.style.display = 'block';
+            document.getElementById('no-images').style.display = 'none';
+        }
+
+        function updateCountdown() {
+            const el = document.getElementById('countdown');
+            const label = isReconnecting ? 'Reconnecting' : 'Connected';
+            el.textContent = `${label} (${secondsLeft}s)`;
+            el.style.color = isReconnecting ? 'rgba(255, 200, 0, 0.9)' : 'white';
+        }
+
+        async function tick() {
+            if (secondsLeft <= 0) {
+                try {
+                    await fetchImageList();
+                    showRandomImage();
+                    isReconnecting = false;
+                    reconnectAttempts = 0;
+                    document.body.style.backgroundColor = '';
+                    secondsLeft = REFRESH_SECONDS;
+                } catch {
+                    isReconnecting = true;
+                    reconnectAttempts++;
+                    if (reconnectAttempts >= 1) {
+                        document.body.style.backgroundColor = '#cc0000';
+                        showErrorImage();
+                    }
+                    secondsLeft = REFRESH_SECONDS;
+                }
+            }
+            updateCountdown();
+            secondsLeft--;
+        }
+
+        async function init() {
+            try {
+                await fetchImageList();
+                showRandomImage();
+                new Image().src = '/images/error.png';
+            } catch {
+                isReconnecting = true;
+                secondsLeft = REFRESH_SECONDS;
+            }
+            updateCountdown();
+            secondsLeft--;
+        }
+
+        init();
+        setInterval(tick, 1000);
+    </script>
+</body>
+</html>
