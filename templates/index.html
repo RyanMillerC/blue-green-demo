@@ -86,13 +86,13 @@
         function showRandomImage() {
             const imgEl = document.getElementById('main-image');
             const noImgEl = document.getElementById('no-images');
-            const groverImages = imageList.filter(f => f.startsWith('grover-'));
-            if (groverImages.length === 0) {
+            const blueImages = imageList.filter(f => f.startsWith('blue-'));
+            if (blueImages.length === 0) {
                 noImgEl.style.display = 'block';
                 imgEl.style.display = 'none';
                 return;
             }
-            const pick = groverImages[Math.floor(Math.random() * groverImages.length)];
+            const pick = blueImages[Math.floor(Math.random() * blueImages.length)];
             imgEl.src = `/images/${encodeURIComponent(pick)}`;
             imgEl.style.display = 'block';
             noImgEl.style.display = 'none';
