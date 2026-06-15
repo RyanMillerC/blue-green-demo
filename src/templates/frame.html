@@ -5,21 +5,41 @@
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
-            background: transparent;
+            background-color: {{ background_color }};
+            min-height: 100vh;
             display: flex;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
-            height: 100vh;
+            font-family: Arial, sans-serif;
+            -webkit-font-smoothing: antialiased;
         }
-        img { width: 340px; height: 340px; object-fit: contain; }
-        p { color: rgba(255, 255, 255, 0.6); font-size: 1.2rem; font-style: italic; font-family: Arial, sans-serif; }
+        h1 {
+            color: white;
+            font-size: 5rem;
+            font-weight: bold;
+            letter-spacing: 0.4em;
+            margin: 2rem 0;
+        }
+        img {
+            width: 340px;
+            height: 340px;
+            object-fit: contain;
+        }
+        p {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 1.2rem;
+            font-style: italic;
+        }
     </style>
 </head>
 <body>
+    <h1>DEMO</h1>
     {% if image %}
         <img src="/images/{{ image }}" alt="Demo image" />
     {% else %}
         <p>No images found in /images</p>
     {% endif %}
+    <h1>DEMO</h1>
 </body>
 </html>

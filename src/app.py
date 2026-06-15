@@ -1,10 +1,19 @@
-from flask import Flask, render_template, send_from_directory, jsonify
+from flask import Flask, render_template, send_from_directory
 import os
 import random
+import importlib.util
 
 app = Flask(__name__)
 IMAGE_DIR = os.path.join(os.path.dirname(__file__), "images")
+CONFIG_FILE = os.path.join(os.path.dirname(__file__), "config.py")
 VALID_EXTS = {".jpg", ".jpeg", ".png", ".gif", ".webp"}
+
+
+def load_config():
+    spec = importlib.util.spec_from_file_location("config", CONFIG_FILE)
+    config = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(config)
+    return config
 
 
 @app.route("/")
@@ -14,25 +23,15 @@ def index():
 
 @app.route("/frame")
 def frame():
-    blue_images = []
+    config = load_config()
+    images = []
     if os.path.isdir(IMAGE_DIR):
-        blue_images = [
+        images = [
             f for f in os.listdir(IMAGE_DIR)
-            if f.startswith("blue-") and os.path.splitext(f)[1].lower() in VALID_EXTS
+            if f.startswith(config.IMAGE_PREFIX + "-") and os.path.splitext(f)[1].lower() in VALID_EXTS
         ]
-    image = random.choice(blue_images) if blue_images else None
-    return render_template("frame.html", image=image)
-
-
-@app.route("/images-list")
-def images_list():
-    if not os.path.isdir(IMAGE_DIR):
-        return jsonify([])
-    files = [
-        f for f in os.listdir(IMAGE_DIR)
-        if os.path.splitext(f)[1].lower() in VALID_EXTS
-    ]
-    return jsonify(sorted(files))
+    image = random.choice(images) if images else None
+    return render_template("frame.html", image=image, background_color=config.BACKGROUND_COLOR)
 
 
 @app.route("/images/<path:filename>")

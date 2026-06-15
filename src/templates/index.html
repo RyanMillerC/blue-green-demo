@@ -5,46 +5,23 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Demo</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            background-color: #0033cc;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            font-family: Arial, sans-serif;
-        }
-
-        h1 {
-            color: white;
-            font-size: 5rem;
-            font-weight: bold;
-            letter-spacing: 0.4em;
-            margin: 2rem 0;
-        }
-
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { overflow: hidden; }
         iframe {
-            width: 340px;
-            height: 340px;
+            display: block;
+            width: 100vw;
+            height: 100vh;
             border: none;
-            background: transparent;
         }
-
         #countdown {
             position: fixed;
             bottom: 1.5rem;
             right: 1.5rem;
             color: white;
             -webkit-font-smoothing: antialiased;
+            font-family: Arial, sans-serif;
             font-size: 3rem;
             font-weight: bold;
-            letter-spacing: 0.05em;
             background: rgba(0, 0, 0, 0.25);
             padding: 1rem 2rem;
             border-radius: 20px;
@@ -52,24 +29,23 @@
     </style>
 </head>
 <body>
-    <h1>DEMO</h1>
     <iframe id="frame" src="/frame"></iframe>
-    <h1>DEMO</h1>
-    <div id="countdown">5s</div>
+    <div id="countdown"></div>
 
     <script>
         const REFRESH_SECONDS = 5;
         let secondsLeft = REFRESH_SECONDS;
 
         function tick() {
-            document.getElementById('countdown').textContent = `${secondsLeft}s`;
-            if (secondsLeft <= 0) {
+            document.getElementById('countdown').textContent = `Refreshing in ${secondsLeft}s...`;
+            secondsLeft--;
+            if (secondsLeft === 0) {
                 document.getElementById('frame').src = '/frame';
                 secondsLeft = REFRESH_SECONDS;
             }
-            secondsLeft--;
         }
 
+        tick();
         setInterval(tick, 1000);
     </script>
 </body>
