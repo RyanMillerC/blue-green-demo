@@ -29,22 +29,11 @@
             margin: 2rem 0;
         }
 
-        #image-container {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        #main-image {
+        iframe {
             width: 340px;
             height: 340px;
-            object-fit: contain;
-        }
-
-        #no-images {
-            color: rgba(255, 255, 255, 0.6);
-            font-size: 1.2rem;
-            font-style: italic;
+            border: none;
+            background: transparent;
         }
 
         #countdown {
@@ -64,91 +53,23 @@
 </head>
 <body>
     <h1>DEMO</h1>
-    <div id="image-container">
-        <img id="main-image" src="" alt="Demo image" style="display:none;" />
-        <p id="no-images" style="display:none;">No images found in /images</p>
-    </div>
+    <iframe id="frame" src="/frame"></iframe>
     <h1>DEMO</h1>
     <div id="countdown">5s</div>
 
     <script>
         const REFRESH_SECONDS = 5;
         let secondsLeft = REFRESH_SECONDS;
-        let imageList = [];
-        let isReconnecting = false;
-        let reconnectAttempts = 0;
 
-        async function fetchImageList() {
-            const response = await fetch('/images-list');
-            imageList = await response.json();
-        }
-
-        function showRandomImage() {
-            const imgEl = document.getElementById('main-image');
-            const noImgEl = document.getElementById('no-images');
-            const blueImages = imageList.filter(f => f.startsWith('blue-'));
-            if (blueImages.length === 0) {
-                noImgEl.style.display = 'block';
-                imgEl.style.display = 'none';
-                return;
-            }
-            const pick = blueImages[Math.floor(Math.random() * blueImages.length)];
-            imgEl.src = `/images/${encodeURIComponent(pick)}`;
-            imgEl.style.display = 'block';
-            noImgEl.style.display = 'none';
-        }
-
-        function showErrorImage() {
-            const imgEl = document.getElementById('main-image');
-            imgEl.src = '/images/error.png';
-            imgEl.style.display = 'block';
-            document.getElementById('no-images').style.display = 'none';
-        }
-
-        function updateCountdown() {
-            const el = document.getElementById('countdown');
-            const label = isReconnecting ? 'Reconnecting' : 'Connected';
-            el.textContent = `${label} (${secondsLeft}s)`;
-            el.style.color = isReconnecting ? 'rgba(255, 200, 0, 0.9)' : 'white';
-        }
-
-        async function tick() {
+        function tick() {
+            document.getElementById('countdown').textContent = `${secondsLeft}s`;
             if (secondsLeft <= 0) {
-                try {
-                    await fetchImageList();
-                    showRandomImage();
-                    isReconnecting = false;
-                    reconnectAttempts = 0;
-                    document.body.style.backgroundColor = '';
-                    secondsLeft = REFRESH_SECONDS;
-                } catch {
-                    isReconnecting = true;
-                    reconnectAttempts++;
-                    if (reconnectAttempts >= 1) {
-                        document.body.style.backgroundColor = '#cc0000';
-                        showErrorImage();
-                    }
-                    secondsLeft = REFRESH_SECONDS;
-                }
-            }
-            updateCountdown();
-            secondsLeft--;
-        }
-
-        async function init() {
-            try {
-                await fetchImageList();
-                showRandomImage();
-                new Image().src = '/images/error.png';
-            } catch {
-                isReconnecting = true;
+                document.getElementById('frame').src = '/frame';
                 secondsLeft = REFRESH_SECONDS;
             }
-            updateCountdown();
             secondsLeft--;
         }
 
-        init();
         setInterval(tick, 1000);
     </script>
 </body>

@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: transparent;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+        img { width: 340px; height: 340px; object-fit: contain; }
+        p { color: rgba(255, 255, 255, 0.6); font-size: 1.2rem; font-style: italic; font-family: Arial, sans-serif; }
+    </style>
+</head>
+<body>
+    {% if image %}
+        <img src="/images/{{ image }}" alt="Demo image" />
+    {% else %}
+        <p>No images found in /images</p>
+    {% endif %}
+</body>
+</html>

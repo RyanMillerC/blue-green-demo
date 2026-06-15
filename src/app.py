@@ -1,5 +1,6 @@
 from flask import Flask, render_template, send_from_directory, jsonify
 import os
+import random
 
 app = Flask(__name__)
 IMAGE_DIR = os.path.join(os.path.dirname(__file__), "images")
@@ -9,6 +10,18 @@ VALID_EXTS = {".jpg", ".jpeg", ".png", ".gif", ".webp"}
 @app.route("/")
 def index():
     return render_template("index.html")
+
+
+@app.route("/frame")
+def frame():
+    blue_images = []
+    if os.path.isdir(IMAGE_DIR):
+        blue_images = [
+            f for f in os.listdir(IMAGE_DIR)
+            if f.startswith("blue-") and os.path.splitext(f)[1].lower() in VALID_EXTS
+        ]
+    image = random.choice(blue_images) if blue_images else None
+    return render_template("frame.html", image=image)
 
 
 @app.route("/images-list")
