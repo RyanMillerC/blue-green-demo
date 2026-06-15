@@ -7,12 +7,80 @@
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { overflow: hidden; }
+
         iframe {
             display: block;
             width: 100vw;
             height: 100vh;
             border: none;
         }
+
+        #menu-btn {
+            position: fixed;
+            top: 1.5rem;
+            right: 1.5rem;
+            z-index: 200;
+            background: rgba(0, 0, 0, 0.25);
+            border: none;
+            color: white;
+            font-family: Arial, sans-serif;
+            -webkit-font-smoothing: antialiased;
+            font-size: 3rem;
+            font-weight: bold;
+            padding: 1rem 2rem;
+            border-radius: 20px;
+            cursor: pointer;
+            line-height: 1;
+            transition: right 0.25s ease;
+        }
+
+        #menu-btn.pane-open { right: calc(33vw + 1.5rem); }
+
+        #log-pane {
+            position: fixed;
+            top: 0;
+            right: -33vw;
+            width: 33vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.88);
+            color: white;
+            font-family: Arial, sans-serif;
+            -webkit-font-smoothing: antialiased;
+            z-index: 199;
+            transition: right 0.25s ease;
+            display: flex;
+            flex-direction: column;
+        }
+
+        #log-pane.open { right: 0; }
+
+        #log-pane h2 {
+            font-size: 1.2rem;
+            font-weight: bold;
+            padding: 1.5rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+            letter-spacing: 0.05em;
+        }
+
+        #log-entries {
+            flex: 1;
+            overflow-y: auto;
+            padding: 0.75rem 1.5rem;
+        }
+
+        .log-entry {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+            font-size: 0.95rem;
+        }
+
+        .log-entry .time { color: rgba(255, 255, 255, 0.5); }
+        .log-entry .status-ok { color: #44dd88; }
+        .log-entry .status-err { color: #ff5555; }
+
         #countdown {
             position: fixed;
             bottom: 1.5rem;
@@ -25,22 +93,62 @@
             background: rgba(0, 0, 0, 0.25);
             padding: 1rem 2rem;
             border-radius: 20px;
+            transition: right 0.25s ease;
         }
+
+        #countdown.pane-open { right: calc(33vw + 1.5rem); }
     </style>
 </head>
 <body>
     <iframe id="frame" src="/frame"></iframe>
+    <button id="menu-btn" onclick="togglePane()">&#8249;</button>
+    <div id="log-pane">
+        <h2>CONNECTION LOG</h2>
+        <div id="log-entries"></div>
+    </div>
     <div id="countdown"></div>
 
     <script>
         const REFRESH_SECONDS = 5;
         let secondsLeft = REFRESH_SECONDS;
+        const logs = [];
+        const frame = document.getElementById('frame');
+
+        function togglePane() {
+            const pane = document.getElementById('log-pane');
+            const btn = document.getElementById('menu-btn');
+            pane.classList.toggle('open');
+            const isOpen = pane.classList.contains('open');
+            btn.classList.toggle('pane-open', isOpen);
+            btn.innerHTML = isOpen ? '&#8250;' : '&#8249;';
+            document.getElementById('countdown').classList.toggle('pane-open', isOpen);
+        }
+
+        function addLog(ok) {
+            const now = new Date();
+            const time = now.toLocaleTimeString();
+            logs.unshift({ time, ok });
+            renderLogs();
+        }
+
+        function renderLogs() {
+            const el = document.getElementById('log-entries');
+            el.innerHTML = logs.map(e => `
+                <div class="log-entry">
+                    <span class="time">${e.time}</span>
+                    <span class="${e.ok ? 'status-ok' : 'status-err'}">${e.ok ? 'Connected' : 'Error'}</span>
+                </div>
+            `).join('');
+        }
+
+        frame.addEventListener('load', () => addLog(true));
+        frame.addEventListener('error', () => addLog(false));
 
         function tick() {
             document.getElementById('countdown').textContent = `Refreshing in ${secondsLeft}s...`;
             secondsLeft--;
             if (secondsLeft === 0) {
-                document.getElementById('frame').src = '/frame';
+                frame.src = '/frame';
                 secondsLeft = REFRESH_SECONDS;
             }
         }
