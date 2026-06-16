@@ -8,7 +8,6 @@ FROM registry.access.redhat.com/hi/python:latest-fips
 WORKDIR /app
 COPY --from=builder /app/venv /app/venv
 COPY --chmod=644 app.py .
-COPY --chmod=644 images/ images/
 
 EXPOSE 8080
 
