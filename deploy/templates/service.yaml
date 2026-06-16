@@ -1,15 +1,17 @@
+{{- range .Values.components }}
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ .Values.appName }}
+  name: {{ .name }}
   labels:
-    app: {{ .Values.appName }}
+    app: {{ .name }}
 spec:
   type: ClusterIP
   selector:
-    app: {{ .Values.appName }}
+    app: {{ .name }}
   ports:
-    - name: "{{ .Values.containerPort }}-tcp"
-      port: {{ .Values.containerPort }}
-      targetPort: {{ .Values.containerPort }}
+    - name: "{{ .containerPort }}-tcp"
+      port: {{ .containerPort }}
+      targetPort: {{ .containerPort }}
+{{- end }}

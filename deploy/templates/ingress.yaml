@@ -1,19 +1,23 @@
+{{- range .Values.components }}
+{{- if .url }}
 ---
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: {{ .Values.appName }}
+  name: {{ .name }}
   annotations:
     route.openshift.io/termination: edge
 spec:
   rules:
-    - host: {{ .Values.url }}
+    - host: {{ .url }}
       http:
         paths:
           - path: /
             pathType: Prefix
             backend:
               service:
-                name: {{ .Values.appName }}
+                name: {{ .name }}
                 port:
-                  number: {{ .Values.containerPort }}
+                  number: {{ .containerPort }}
+{{- end }}
+{{- end }}

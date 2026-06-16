@@ -1,11 +1,15 @@
-# Name will be used for all k8s objects (Deployment, Service, and Ingress)
-appName: blue-green-demo
+components:
+  - name: demo-backend
+    image: quay.io/ryanmillerc/demo-backend:latest
+    containerPort: 8080
+    url: demo-backend.apps.ocp.taco.moe
 
-# Port the application inside the container runs on
-containerPort: 8080
-
-# Container image and tag for application
-image: quay.io/ryanmillerc/blue-green-demo:latest
-
-# URL to be exposed from the cluster. This should be in the format something.apps.lab.aws.ocp.uscg.mil
-url: blue-green-demo.apps.ocp.taco.moe
+  - name: demo-frontend
+    image: quay.io/ryanmillerc/demo-frontend:latest
+    containerPort: 8080
+    url: demo.apps.ocp.taco.moe
+    env:
+      - name: BACKGROUND_COLOR
+        value: "#0033cc"
+      - name: IMAGE_ENDPOINT
+        value: "https://demo-backend.apps.ocp.taco.moe/blue"
