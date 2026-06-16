@@ -1,5 +1,5 @@
-IMAGE     = muppets-demo
-CONTAINER = muppets-demo
+IMAGE     = blue-green-demo
+CONTAINER = blue-green-demo
 PORT      = 8080
 
 .PHONY: help
