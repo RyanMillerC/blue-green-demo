@@ -34,7 +34,7 @@ spec:
           {{- if .awsTokenMount }}
           volumeMounts:
             - name: aws-token
-              mountPath: /var/run/secrets/openshift/serviceaccount
+              mountPath: /var/run/secrets/eks.amazonaws.com/serviceaccount
               readOnly: true
           {{- end }}
           resources:
