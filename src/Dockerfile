@@ -1,15 +1,14 @@
-FROM registry.access.redhat.com/ubi9/python-311
+FROM nginx:alpine
 
-WORKDIR /app
+ENV IMAGE_ENDPOINT="https://whatever.domain.com/api/image"
+ENV BACKGROUND_COLOR="#00aa44"
 
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+COPY index.html /usr/share/nginx/html/index.html
+COPY frame.html /usr/share/nginx/html/frame.html
+COPY config.json /usr/share/nginx/html/config.json
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
 
-COPY app.py .
-COPY config.py .
-COPY templates/ templates/
-COPY images/ images/
+EXPOSE 80
 
-EXPOSE 5000
-
-CMD ["python", "app.py"]
+ENTRYPOINT ["/entrypoint.sh"]

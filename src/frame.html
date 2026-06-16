@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-family: Arial, sans-serif;
+            -webkit-font-smoothing: antialiased;
+        }
+        h1 {
+            color: white;
+            font-size: 5rem;
+            font-weight: bold;
+            letter-spacing: 0.4em;
+            margin: 2rem 0;
+        }
+        img {
+            width: 340px;
+            height: 340px;
+            object-fit: contain;
+        }
+        p {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 1.2rem;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <h1 id="label-top">DEMO</h1>
+    <div id="image-container"></div>
+    <h1 id="label-bottom">DEMO</h1>
+    <script>
+        function showError() {
+            document.body.style.backgroundColor = '#cc0000';
+            document.getElementById('label-top').textContent = 'SERVER';
+            document.getElementById('label-bottom').textContent = 'ERROR';
+            const container = document.getElementById('image-container');
+            container.innerHTML = '';
+            const msg = document.createElement('div');
+            msg.style.cssText = 'width:540px;height:340px;display:flex;align-items:center;justify-content:center;';
+            msg.innerHTML = '<p style="color:white;font-size:1.4rem;font-style:normal;line-height:1.6;text-align:center;"><strong>500 Internal Server Error:</strong> This application is currently unavailable. Please check the server logs.</p>';
+            container.appendChild(msg);
+        }
+
+        fetch('/config.json')
+            .then(r => r.json())
+            .then(config => {
+                document.body.style.backgroundColor = config.backgroundColor;
+                const container = document.getElementById('image-container');
+                const img = document.createElement('img');
+                img.alt = 'Demo image';
+                img.onerror = showError;
+                container.appendChild(img);
+                img.src = config.imageEndpoint;
+            })
+            .catch(showError);
+    </script>
+</body>
+</html>

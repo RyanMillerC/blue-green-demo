@@ -17,7 +17,7 @@ build:
 
 .PHONY: run
 run:
-	cd ./src && docker run --rm --name $(CONTAINER) -p $(PORT):5000 $(IMAGE)
+	docker run --rm --name $(CONTAINER) -p $(PORT):80 $(IMAGE)
 
 .PHONY: clean
 clean:

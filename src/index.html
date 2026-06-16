@@ -95,7 +95,7 @@
     </style>
 </head>
 <body>
-    <iframe id="frame" src="/frame"></iframe>
+    <iframe id="frame" src="/frame.html"></iframe>
     <div id="controls">
         <div id="countdown"></div>
         <button id="menu-btn" onclick="togglePane()">&#9776;</button>
@@ -149,13 +149,13 @@
         async function refresh() {
             let ok = false;
             try {
-                const res = await fetch('/frame');
+                const res = await fetch('/frame.html');
                 ok = res.ok;
             } catch {}
             addLog(ok);
             if (ok) {
                 frame.removeAttribute('srcdoc');
-                frame.src = '/frame';
+                frame.src = '/frame.html';
             } else {
                 frame.srcdoc = ERROR_SRCDOC;
             }
