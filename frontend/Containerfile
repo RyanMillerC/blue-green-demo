@@ -4,11 +4,11 @@ FROM registry.access.redhat.com/hi/nginx:latest-fips
 
 # Blue v0.1.0
 ENV IMAGE_ENDPOINT="http://localhost:8081/blue"
-ENV BACKGROUND_COLOR="#0033cc" # Blue
+ENV BACKGROUND_COLOR="#0033cc"
 
 # Green v0.2.0
 # ENV IMAGE_ENDPOINT="http://localhost:8081/green"
-# ENV BACKGROUND_COLOR="#00aa44" # Green
+# ENV BACKGROUND_COLOR="#00aa44"
 
 COPY --from=builder /bin/sh /bin/sh
 COPY --chmod=755 entrypoint.sh /entrypoint.sh
