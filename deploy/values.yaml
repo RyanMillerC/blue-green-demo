@@ -2,11 +2,13 @@ components:
   - name: demo-backend
     image: quay.io/ryanmillerc/demo-backend:latest
     containerPort: 8080
+    replicas: 3
     url: demo-backend.apps.ocp.taco.moe
 
   - name: demo-frontend
     image: quay.io/ryanmillerc/demo-frontend:latest
     containerPort: 8080
+    replicas: 3
     url: demo.apps.ocp.taco.moe
     env:
       - name: BACKGROUND_COLOR
