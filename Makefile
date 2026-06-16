@@ -1,24 +1,58 @@
-IMAGE     = blue-green-demo
-CONTAINER = blue-green-demo
-PORT      = 8080
+FRONTEND_IMAGE     = blue-green-demo-frontend
+FRONTEND_CONTAINER = blue-green-demo-frontend
+FRONTEND_PORT      = 8080
+
+BACKEND_IMAGE      = blue-green-demo-backend
+BACKEND_CONTAINER  = blue-green-demo-backend
+BACKEND_PORT       = 8081
+
 
 .PHONY: help
 help:
 	@echo "Usage: make <target>"
 	@echo ""
-	@echo "  build    Build the Docker image"
-	@echo "  run      Start the container (foreground)"
-	@echo "  stop     Remove a stuck/lingering container"
-	@echo "  clean    Remove the image"
+	@echo "  build            Build both images"
+	@echo "  build-backend    Build the backend image"
+	@echo "  build-frontend   Build the frontend image"
+	@echo "  clean            Remove both images"
+	@echo "  deploy           Deploy the Helm chart"
+	@echo "  run-backend      Start the backend container"
+	@echo "  run-frontend     Start the frontend container"
+	@echo "  template         Render the Helm chart templates"
+	@echo "  undeploy         Uninstall the Helm chart"
 
 .PHONY: build
-build:
-	cd ./frontend && docker build -t $(IMAGE) .
+build: build-backend build-frontend
 
-.PHONY: run
-run:
-	docker run --rm --name $(CONTAINER) -p $(PORT):8080 $(IMAGE)
+.PHONY: build-backend
+build-backend:
+	cd ./backend && docker build -t $(BACKEND_IMAGE) .
+
+.PHONY: build-frontend
+build-frontend:
+	cd ./frontend && docker build -t $(FRONTEND_IMAGE) .
 
 .PHONY: clean
 clean:
-	docker rmi $(IMAGE)
+	docker rmi $(BACKEND_IMAGE) $(FRONTEND_IMAGE)
+
+.PHONY: deploy
+deploy:
+	helm upgrade --install blue-green-demo ./deploy
+
+.PHONY: run-backend
+run-backend:
+	docker run --rm --name $(BACKEND_CONTAINER) -p $(BACKEND_PORT):8080 $(BACKEND_IMAGE)
+
+.PHONY: run-frontend
+run-frontend:
+	docker run --rm --name $(FRONTEND_CONTAINER) -p $(FRONTEND_PORT):8080 $(FRONTEND_IMAGE)
+
+.PHONY: template
+template:
+	helm template blue-green-demo ./deploy
+
+.PHONY: undeploy
+undeploy:
+	helm uninstall blue-green-demo
+
