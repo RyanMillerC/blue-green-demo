@@ -13,7 +13,7 @@ help:
 
 .PHONY: build
 build:
-	cd ./src && docker build -t $(IMAGE) .
+	cd ./frontend && docker build -t $(IMAGE) .
 
 .PHONY: run
 run:
