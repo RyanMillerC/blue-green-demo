@@ -18,7 +18,8 @@ def load_config():
 
 @app.route("/")
 def index():
-    return render_template("index.html")
+    config = load_config()
+    return render_template("index.html", background_color=config.BACKGROUND_COLOR)
 
 
 @app.route("/frame")

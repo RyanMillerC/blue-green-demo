@@ -13,28 +13,40 @@
             width: 100vw;
             height: 100vh;
             border: none;
+            transition: width 0.25s ease;
         }
 
-        #menu-btn {
+        iframe.pane-open { width: 67vw; }
+
+        #controls {
             position: fixed;
             top: 1.5rem;
             right: 1.5rem;
             z-index: 200;
-            background: rgba(0, 0, 0, 0.25);
-            border: none;
-            color: white;
-            font-family: Arial, sans-serif;
-            -webkit-font-smoothing: antialiased;
-            font-size: 3rem;
-            font-weight: bold;
-            padding: 1rem 2rem;
-            border-radius: 20px;
-            cursor: pointer;
-            line-height: 1;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
             transition: right 0.25s ease;
         }
 
-        #menu-btn.pane-open { right: calc(33vw + 1.5rem); }
+        #controls.pane-open { right: calc(33vw + 1.5rem); }
+
+        #countdown, #menu-btn {
+            background: rgba(0, 0, 0, 0.25);
+            color: white;
+            font-family: Arial, sans-serif;
+            -webkit-font-smoothing: antialiased;
+            font-size: 1.25rem;
+            font-weight: bold;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            line-height: 1;
+        }
+
+        #menu-btn {
+            border: none;
+            cursor: pointer;
+        }
 
         #log-pane {
             position: fixed;
@@ -80,35 +92,27 @@
         .log-entry .time { color: rgba(255, 255, 255, 0.5); }
         .log-entry .status-ok { color: #44dd88; }
         .log-entry .status-err { color: #ff5555; }
-
-        #countdown {
-            position: fixed;
-            bottom: 1.5rem;
-            right: 1.5rem;
-            color: white;
-            -webkit-font-smoothing: antialiased;
-            font-family: Arial, sans-serif;
-            font-size: 3rem;
-            font-weight: bold;
-            background: rgba(0, 0, 0, 0.25);
-            padding: 1rem 2rem;
-            border-radius: 20px;
-            transition: right 0.25s ease;
-        }
-
-        #countdown.pane-open { right: calc(33vw + 1.5rem); }
     </style>
 </head>
 <body>
     <iframe id="frame" src="/frame"></iframe>
-    <button id="menu-btn" onclick="togglePane()">&#8249;</button>
+    <div id="controls">
+        <div id="countdown"></div>
+        <button id="menu-btn" onclick="togglePane()">&#9776;</button>
+    </div>
     <div id="log-pane">
         <h2>CONNECTION LOG</h2>
         <div id="log-entries"></div>
     </div>
-    <div id="countdown"></div>
 
     <script>
+        const ERROR_SRCDOC = `<!DOCTYPE html><html><head><style>
+            * { margin: 0; padding: 0; box-sizing: border-box; }
+            body { background-color: #cc0000; min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; font-family: Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+            h1 { color: white; font-size: 5rem; font-weight: bold; letter-spacing: 0.4em; margin: 2rem 0; }
+            .spacer { width: 340px; height: 340px; }
+        </style></head><body><h1>SERVER</h1><div class="spacer"></div><h1>ERROR</h1></body></html>`;
+
         const REFRESH_SECONDS = 5;
         let secondsLeft = REFRESH_SECONDS;
         const logs = [];
@@ -116,12 +120,13 @@
 
         function togglePane() {
             const pane = document.getElementById('log-pane');
+            const controls = document.getElementById('controls');
             const btn = document.getElementById('menu-btn');
             pane.classList.toggle('open');
             const isOpen = pane.classList.contains('open');
-            btn.classList.toggle('pane-open', isOpen);
-            btn.innerHTML = isOpen ? '&#8250;' : '&#8249;';
-            document.getElementById('countdown').classList.toggle('pane-open', isOpen);
+            controls.classList.toggle('pane-open', isOpen);
+            frame.classList.toggle('pane-open', isOpen);
+            btn.innerHTML = isOpen ? '&times;' : '&#9776;';
         }
 
         function addLog(ok) {
@@ -136,20 +141,32 @@
             el.innerHTML = logs.map(e => `
                 <div class="log-entry">
                     <span class="time">${e.time}</span>
-                    <span class="${e.ok ? 'status-ok' : 'status-err'}">${e.ok ? 'Connected' : 'Error'}</span>
+                    <span class="${e.ok ? 'status-ok' : 'status-err'}">${e.ok ? 'Connected' : 'Server Error'}</span>
                 </div>
             `).join('');
         }
 
-        frame.addEventListener('load', () => addLog(true));
-        frame.addEventListener('error', () => addLog(false));
+        async function refresh() {
+            let ok = false;
+            try {
+                const res = await fetch('/frame');
+                ok = res.ok;
+            } catch {}
+            addLog(ok);
+            if (ok) {
+                frame.removeAttribute('srcdoc');
+                frame.src = '/frame';
+            } else {
+                frame.srcdoc = ERROR_SRCDOC;
+            }
+            secondsLeft = REFRESH_SECONDS;
+        }
 
         function tick() {
             document.getElementById('countdown').textContent = `Refreshing in ${secondsLeft}s...`;
             secondsLeft--;
             if (secondsLeft === 0) {
-                frame.src = '/frame';
-                secondsLeft = REFRESH_SECONDS;
+                refresh();
             }
         }
 

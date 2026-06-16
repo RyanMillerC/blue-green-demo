@@ -1,3 +1,7 @@
+# Blue
 # BACKGROUND_COLOR = "#0033cc"
+# IMAGE_PREFIX = "blue"
+
+# Green
 BACKGROUND_COLOR = "#00aa44"
 IMAGE_PREFIX = "green"
