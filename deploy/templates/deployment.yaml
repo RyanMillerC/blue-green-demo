@@ -31,6 +31,12 @@ spec:
               value: {{ .value | quote }}
             {{- end }}
           {{- end }}
+          {{- if .awsTokenMount }}
+          volumeMounts:
+            - name: aws-token
+              mountPath: /var/run/secrets/openshift/serviceaccount
+              readOnly: true
+          {{- end }}
           resources:
             requests:
               cpu: 100m
@@ -38,4 +44,14 @@ spec:
             limits:
               cpu: 500m
               memory: 256Mi
+      {{- if .awsTokenMount }}
+      volumes:
+        - name: aws-token
+          projected:
+            sources:
+              - serviceAccountToken:
+                  audience: sts.amazonaws.com
+                  expirationSeconds: 3600
+                  path: token
+      {{- end }}
 {{- end }}

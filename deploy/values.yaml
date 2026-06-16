@@ -3,6 +3,7 @@ components:
     image: quay.io/ryanmillerc/demo-backend:latest
     containerPort: 8080
     replicas: 3
+    awsTokenMount: true
     url: demo-backend.apps.ocp.taco.moe
     env:
       - name: AWS_ROLE_ARN
