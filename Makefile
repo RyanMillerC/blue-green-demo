@@ -18,6 +18,9 @@ help:
 	@echo "  compose-down     Stop compose stack"
 	@echo "  compose-up       Start compose stack (frontend + backend)"
 	@echo "  deploy           Deploy the Helm chart"
+	@echo "  push             Push both images"
+	@echo "  push-backend     Push the backend image"
+	@echo "  push-frontend    Push the frontend image"
 	@echo "  run-backend      Start the backend container"
 	@echo "  run-frontend     Start the frontend container"
 	@echo "  template         Render the Helm chart templates"
@@ -49,6 +52,17 @@ compose-up:
 .PHONY: deploy
 deploy:
 	helm upgrade --install demo ./deploy
+
+.PHONY: push
+push: push-backend push-frontend
+
+.PHONY: push-backend
+push-backend:
+	docker push $(BACKEND_IMAGE)
+
+.PHONY: push-frontend
+push-frontend:
+	docker push $(FRONTEND_IMAGE)
 
 .PHONY: run-backend
 run-backend:
