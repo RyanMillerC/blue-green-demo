@@ -1,4 +1,3 @@
 {
-  "imageEndpoint": "https://whatever.domain.com/api/image",
-  "backgroundColor": "#00aa44"
+  "_note": "This file is a writable placeholder. Contents are overwritten at container startup by entrypoint.sh using environment variables."
 }

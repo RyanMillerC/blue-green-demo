@@ -2,8 +2,13 @@ FROM registry.access.redhat.com/hi/nginx:latest-builder AS builder
 
 FROM registry.access.redhat.com/hi/nginx:latest-fips
 
-ENV IMAGE_ENDPOINT="https://whatever.domain.com/api/image"
-ENV BACKGROUND_COLOR="#00aa44"
+# Blue v0.1.0
+ENV IMAGE_ENDPOINT="http://localhost:8081/blue"
+ENV BACKGROUND_COLOR="#0033cc" # Blue
+
+# Green v0.2.0
+# ENV IMAGE_ENDPOINT="http://localhost:8081/green"
+# ENV BACKGROUND_COLOR="#00aa44" # Green
 
 COPY --from=builder /bin/sh /bin/sh
 COPY --chmod=755 entrypoint.sh /entrypoint.sh
