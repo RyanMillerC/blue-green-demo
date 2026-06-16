@@ -15,6 +15,8 @@ help:
 	@echo "  build-backend    Build the backend image"
 	@echo "  build-frontend   Build the frontend image"
 	@echo "  clean            Remove both images"
+	@echo "  compose-down     Stop compose stack"
+	@echo "  compose-up       Start compose stack (frontend + backend)"
 	@echo "  deploy           Deploy the Helm chart"
 	@echo "  run-backend      Start the backend container"
 	@echo "  run-frontend     Start the frontend container"
@@ -36,9 +38,17 @@ build-frontend:
 clean:
 	docker rmi $(BACKEND_IMAGE) $(FRONTEND_IMAGE)
 
+.PHONY: compose-down
+compose-down:
+	docker compose down
+
+.PHONY: compose-up
+compose-up:
+	docker compose up --build
+
 .PHONY: deploy
 deploy:
-	helm upgrade --install blue-green-demo ./deploy
+	helm upgrade --install demo ./deploy
 
 .PHONY: run-backend
 run-backend:
@@ -50,9 +60,8 @@ run-frontend:
 
 .PHONY: template
 template:
-	helm template blue-green-demo ./deploy
+	helm template demo ./deploy
 
 .PHONY: undeploy
 undeploy:
 	helm uninstall blue-green-demo
-
