@@ -1,10 +1,10 @@
-FRONTEND_IMAGE     = blue-green-demo-frontend
-FRONTEND_CONTAINER = blue-green-demo-frontend
-FRONTEND_PORT      = 8080
+FRONTEND_IMAGE          = quay.io/ryanmillerc/demo-frontend:latest
+FRONTEND_CONTAINER      = demo-frontend
+FRONTEND_LOCALHOST_PORT = 8080
 
-BACKEND_IMAGE      = blue-green-demo-backend
-BACKEND_CONTAINER  = blue-green-demo-backend
-BACKEND_PORT       = 8081
+BACKEND_IMAGE           = quay.io/ryanmillerc/demo-backend:latest
+BACKEND_CONTAINER       = demo-backend
+BACKEND_LOCALHOST_PORT  = 8081
 
 
 .PHONY: help
@@ -52,11 +52,11 @@ deploy:
 
 .PHONY: run-backend
 run-backend:
-	docker run --rm --name $(BACKEND_CONTAINER) -p $(BACKEND_PORT):8080 $(BACKEND_IMAGE)
+	docker run --rm --name $(BACKEND_CONTAINER) -p $(BACKEND_LOCALHOST_PORT):8080 $(BACKEND_IMAGE)
 
 .PHONY: run-frontend
 run-frontend:
-	docker run --rm --name $(FRONTEND_CONTAINER) -p $(FRONTEND_PORT):8080 $(FRONTEND_IMAGE)
+	docker run --rm --name $(FRONTEND_CONTAINER) -p $(FRONTEND_LOCALHOST_PORT):8080 $(FRONTEND_IMAGE)
 
 .PHONY: template
 template:
