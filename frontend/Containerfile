@@ -12,8 +12,8 @@ ENV BACKGROUND_COLOR="#0033cc"
 
 COPY --from=builder /bin/sh /bin/sh
 COPY --chmod=755 entrypoint.sh /entrypoint.sh
-COPY index.html /usr/share/nginx/html/index.html
-COPY frame.html /usr/share/nginx/html/frame.html
+COPY --chmod=644 index.html /usr/share/nginx/html/index.html
+COPY --chmod=644 frame.html /usr/share/nginx/html/frame.html
 COPY --chmod=666 config.json /usr/share/nginx/html/config.json
 
 EXPOSE 8080
