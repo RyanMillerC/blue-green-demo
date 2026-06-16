@@ -26,11 +26,11 @@ build: build-backend build-frontend
 
 .PHONY: build-backend
 build-backend:
-	cd ./backend && docker build -t $(BACKEND_IMAGE) .
+	docker build -f ./backend/Containerfile -t $(BACKEND_IMAGE) ./backend
 
 .PHONY: build-frontend
 build-frontend:
-	cd ./frontend && docker build -t $(FRONTEND_IMAGE) .
+	docker build -f ./frontend/Containerfile -t $(FRONTEND_IMAGE) ./frontend
 
 .PHONY: clean
 clean:
