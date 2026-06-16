@@ -95,7 +95,7 @@
     </style>
 </head>
 <body>
-    <iframe id="frame" src="/frame.html"></iframe>
+    <iframe id="frame"></iframe>
     <div id="controls">
         <div id="countdown"></div>
         <button id="menu-btn" onclick="togglePane()">&#9776;</button>
@@ -110,11 +110,13 @@
             * { margin: 0; padding: 0; box-sizing: border-box; }
             body { background-color: #cc0000; min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; font-family: Arial, sans-serif; -webkit-font-smoothing: antialiased; }
             h1 { color: white; font-size: 5rem; font-weight: bold; letter-spacing: 0.4em; margin: 2rem 0; }
-            .spacer { width: 340px; height: 340px; }
-        </style></head><body><h1>SERVER</h1><div class="spacer"></div><h1>ERROR</h1></body></html>`;
+            .msg { width: 540px; height: 340px; display: flex; align-items: center; justify-content: center; }
+            p { color: white; font-size: 1.4rem; line-height: 1.6; text-align: center; }
+        </style></head><body><h1>SERVER</h1><div class="msg"><p><strong>500 Internal Server Error:</strong> This application is currently unavailable. Please check the server logs.</p></div><h1>ERROR</h1></body></html>`;
 
         const REFRESH_SECONDS = 5;
         let secondsLeft = REFRESH_SECONDS;
+        let isRefreshing = false;
         const logs = [];
         const frame = document.getElementById('frame');
 
@@ -146,31 +148,49 @@
             `).join('');
         }
 
+        window.addEventListener('message', (e) => {
+            if (e.data === 'ok' || e.data === 'error') {
+                addLog(e.data === 'ok');
+            }
+        });
+
         async function refresh() {
+            isRefreshing = true;
+            document.getElementById('countdown').textContent = 'Refreshed!';
             let ok = false;
             try {
-                const res = await fetch('/frame.html');
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 3000);
+                const res = await fetch('/frame.html', { signal: controller.signal });
+                clearTimeout(timeoutId);
                 ok = res.ok;
             } catch {}
-            addLog(ok);
+
             if (ok) {
                 frame.removeAttribute('srcdoc');
-                frame.src = '/frame.html';
+                frame.src = '/frame.html?t=' + Date.now();
             } else {
-                frame.srcdoc = ERROR_SRCDOC;
+                addLog(false);
+                frame.src = 'data:text/html,' + encodeURIComponent(ERROR_SRCDOC);
             }
             secondsLeft = REFRESH_SECONDS;
+            isRefreshing = false;
         }
 
         function tick() {
+            if (isRefreshing) {
+                document.getElementById('countdown').textContent = 'Refreshed!';
+                return;
+            }
+            if (secondsLeft <= 0) {
+                refresh();
+                return;
+            }
             document.getElementById('countdown').textContent = `Refreshing in ${secondsLeft}s...`;
             secondsLeft--;
-            if (secondsLeft === 0) {
-                refresh();
-            }
         }
 
-        tick();
+        refresh();
         setInterval(tick, 1000);
     </script>
 </body>

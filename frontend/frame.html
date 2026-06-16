@@ -56,11 +56,12 @@
                 const container = document.getElementById('image-container');
                 const img = document.createElement('img');
                 img.alt = 'Demo image';
-                img.onerror = showError;
+                img.onload = () => window.parent.postMessage('ok', '*');
+                img.onerror = () => { showError(); window.parent.postMessage('error', '*'); };
                 container.appendChild(img);
                 img.src = config.imageEndpoint;
             })
-            .catch(showError);
+            .catch(() => { showError(); window.parent.postMessage('error', '*'); });
     </script>
 </body>
 </html>
