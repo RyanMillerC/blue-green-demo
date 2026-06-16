@@ -7,7 +7,7 @@ metadata:
   labels:
     app: {{ .name }}
 spec:
-  replicas: {{ .replicas | default 1 }}
+  replicas: {{ if hasKey . "replicas" }}{{ .replicas }}{{ else }}1{{ end }}
   selector:
     matchLabels:
       app: {{ .name }}
