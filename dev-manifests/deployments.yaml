@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend-dev
+  annotations:
+    image.openshift.io/triggers: |
+      [{"from":{"kind":"ImageStreamTag","name":"frontend-dev:latest"},"fieldPath":"spec.template.spec.containers[?(@.name==\"frontend\")].image"}]
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: frontend-dev
+  template:
+    metadata:
+      labels:
+        app: frontend-dev
+    spec:
+      containers:
+        - name: frontend
+          image: image-registry.openshift-image-registry.svc:5000/<your-namespace>/frontend-dev:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8080
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend-dev
+  annotations:
+    image.openshift.io/triggers: |
+      [{"from":{"kind":"ImageStreamTag","name":"backend-dev:latest"},"fieldPath":"spec.template.spec.containers[?(@.name==\"backend\")].image"}]
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: backend-dev
+  template:
+    metadata:
+      labels:
+        app: backend-dev
+    spec:
+      containers:
+        - name: backend
+          image: image-registry.openshift-image-registry.svc:5000/<your-namespace>/backend-dev:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8080

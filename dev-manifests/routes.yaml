@@ -1,0 +1,21 @@
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: frontend-dev
+spec:
+  to:
+    kind: Service
+    name: frontend-dev
+  port:
+    targetPort: 8080
+---
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: backend-dev
+spec:
+  to:
+    kind: Service
+    name: backend-dev
+  port:
+    targetPort: 8080

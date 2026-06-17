@@ -1,0 +1,9 @@
+apiVersion: image.openshift.io/v1
+kind: ImageStream
+metadata:
+  name: frontend-dev
+---
+apiVersion: image.openshift.io/v1
+kind: ImageStream
+metadata:
+  name: backend-dev
