@@ -63,8 +63,8 @@ dev-teardown:
 
 .PHONY: dev-urls
 dev-urls:
-	@echo "frontend: http://$(shell oc get route frontend-dev -o jsonpath='{.spec.host}')"
-	@echo "backend:  http://$(shell oc get route backend-dev -o jsonpath='{.spec.host}')"
+	@echo "frontend: https://$(shell oc get route frontend-dev -o jsonpath='{.spec.host}')"
+	@echo "backend:  https://$(shell oc get route backend-dev -o jsonpath='{.spec.host}')"
 
 
 ##@ Helm
