@@ -1,6 +1,10 @@
 import os
 import json
+import base64
 import random
+import threading
+from datetime import datetime, timedelta, timezone
+
 import boto3
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import JSONResponse, Response
@@ -17,6 +21,36 @@ _PLACEHOLDER_SVG = """<svg xmlns="http://www.w3.org/2000/svg" width="400" height
 
 _NO_CACHE = {"Cache-Control": "no-store"}
 
+_s3_client = None
+_s3_expiry = None
+_s3_lock = threading.Lock()
+
+
+def _get_s3_client():
+    global _s3_client, _s3_expiry
+    now = datetime.now(timezone.utc)
+    with _s3_lock:
+        if _s3_client is None or now >= _s3_expiry:
+            region = os.environ.get("AWS_REGION", "us-gov-west-1")
+            with open(os.environ["AWS_WEB_IDENTITY_TOKEN_FILE"]) as f:
+                token = f.read().strip()
+            sts = boto3.client("sts", region_name=region)
+            resp = sts.assume_role_with_web_identity(
+                RoleArn=os.environ["AWS_ROLE_ARN"],
+                RoleSessionName="app",
+                WebIdentityToken=token,
+            )
+            creds = resp["Credentials"]
+            _s3_client = boto3.client(
+                "s3",
+                region_name=region,
+                aws_access_key_id=creds["AccessKeyId"],
+                aws_secret_access_key=creds["SecretAccessKey"],
+                aws_session_token=creds["SessionToken"],
+            )
+            _s3_expiry = creds["Expiration"] - timedelta(minutes=5)
+    return _s3_client
+
 
 def _placeholder() -> Response:
     return Response(content=_PLACEHOLDER_SVG, media_type="image/svg+xml", headers=_NO_CACHE)
@@ -25,7 +59,7 @@ def _placeholder() -> Response:
 def _random_image(prefix: str) -> Response:
     if not BUCKET:
         return _placeholder()
-    s3 = boto3.client("s3")
+    s3 = _get_s3_client() if os.environ.get("AWS_ROLE_ARN") else boto3.client("s3")
     result = s3.list_objects_v2(Bucket=BUCKET, Prefix=prefix)
     objects = result.get("Contents", [])
     if not objects:
@@ -39,19 +73,15 @@ def _random_image(prefix: str) -> Response:
 def debug_aws():
     result = {}
 
-    # Env vars
     aws_env = {k: v for k, v in os.environ.items() if k.startswith("AWS_") or k == "S3_BUCKET_NAME"}
     result["env"] = aws_env
 
-    # Token file
     token_file = os.environ.get("AWS_WEB_IDENTITY_TOKEN_FILE")
     if token_file:
         try:
             with open(token_file) as f:
                 token = f.read().strip()
-            # Decode middle segment (claims) without verifying signature
             padding = 4 - len(token.split(".")[1]) % 4
-            import base64
             claims = json.loads(base64.urlsafe_b64decode(token.split(".")[1] + "=" * padding))
             result["token"] = {"claims": claims, "readable": True}
         except Exception as e:
@@ -59,7 +89,6 @@ def debug_aws():
     else:
         result["token"] = {"readable": False, "error": "AWS_WEB_IDENTITY_TOKEN_FILE not set"}
 
-    # STS call
     try:
         sts = boto3.client("sts")
         identity = sts.get_caller_identity()
@@ -67,7 +96,6 @@ def debug_aws():
     except Exception as e:
         result["sts"] = {"ok": False, "error": str(e)}
 
-    # STS call (auto chain)
     try:
         s3 = boto3.client("s3")
         resp = s3.list_objects_v2(Bucket=BUCKET, MaxKeys=5)
@@ -75,27 +103,8 @@ def debug_aws():
     except Exception as e:
         result["s3_auto"] = {"ok": False, "error": str(e)}
 
-    # Manual AssumeRoleWithWebIdentity (mirrors debug script)
     try:
-        region = os.environ.get("AWS_REGION", "us-gov-west-1")
-        role_arn = os.environ["AWS_ROLE_ARN"]
-        token_file = os.environ["AWS_WEB_IDENTITY_TOKEN_FILE"]
-        with open(token_file) as f:
-            token = f.read().strip()
-        sts = boto3.client("sts", region_name=region)
-        resp = sts.assume_role_with_web_identity(
-            RoleArn=role_arn,
-            RoleSessionName="debug",
-            WebIdentityToken=token,
-        )
-        creds = resp["Credentials"]
-        s3 = boto3.client(
-            "s3",
-            region_name=region,
-            aws_access_key_id=creds["AccessKeyId"],
-            aws_secret_access_key=creds["SecretAccessKey"],
-            aws_session_token=creds["SessionToken"],
-        )
+        s3 = _get_s3_client()
         resp = s3.list_objects_v2(Bucket=BUCKET, MaxKeys=5)
         result["s3_manual"] = {"ok": True, "key_count": resp.get("KeyCount", 0)}
     except Exception as e:
