@@ -15,6 +15,13 @@ spec:
     to:
       kind: ImageStreamTag
       name: frontend-dev:latest
+  resources:
+    requests:
+      cpu: 500m
+      memory: 512Mi
+    limits:
+      cpu: "1"
+      memory: 1Gi
 ---
 apiVersion: build.openshift.io/v1
 kind: BuildConfig
@@ -33,3 +40,10 @@ spec:
     to:
       kind: ImageStreamTag
       name: backend-dev:latest
+  resources:
+    requests:
+      cpu: 500m
+      memory: 512Mi
+    limits:
+      cpu: "1"
+      memory: 1Gi
