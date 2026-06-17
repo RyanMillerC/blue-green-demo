@@ -67,13 +67,39 @@ def debug_aws():
     except Exception as e:
         result["sts"] = {"ok": False, "error": str(e)}
 
-    # S3 list
+    # STS call (auto chain)
     try:
         s3 = boto3.client("s3")
         resp = s3.list_objects_v2(Bucket=BUCKET, MaxKeys=5)
-        result["s3"] = {"ok": True, "key_count": resp.get("KeyCount", 0)}
+        result["s3_auto"] = {"ok": True, "key_count": resp.get("KeyCount", 0)}
     except Exception as e:
-        result["s3"] = {"ok": False, "error": str(e)}
+        result["s3_auto"] = {"ok": False, "error": str(e)}
+
+    # Manual AssumeRoleWithWebIdentity (mirrors debug script)
+    try:
+        region = os.environ.get("AWS_REGION", "us-gov-west-1")
+        role_arn = os.environ["AWS_ROLE_ARN"]
+        token_file = os.environ["AWS_WEB_IDENTITY_TOKEN_FILE"]
+        with open(token_file) as f:
+            token = f.read().strip()
+        sts = boto3.client("sts", region_name=region)
+        resp = sts.assume_role_with_web_identity(
+            RoleArn=role_arn,
+            RoleSessionName="debug",
+            WebIdentityToken=token,
+        )
+        creds = resp["Credentials"]
+        s3 = boto3.client(
+            "s3",
+            region_name=region,
+            aws_access_key_id=creds["AccessKeyId"],
+            aws_secret_access_key=creds["SecretAccessKey"],
+            aws_session_token=creds["SessionToken"],
+        )
+        resp = s3.list_objects_v2(Bucket=BUCKET, MaxKeys=5)
+        result["s3_manual"] = {"ok": True, "key_count": resp.get("KeyCount", 0)}
+    except Exception as e:
+        result["s3_manual"] = {"ok": False, "error": str(e)}
 
     return JSONResponse(result)
 
