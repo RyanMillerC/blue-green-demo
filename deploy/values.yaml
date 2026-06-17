@@ -3,15 +3,11 @@ components:
     image: quay.io/ryanmillerc/demo-backend:latest
     containerPort: 8080
     replicas: 3
-    awsTokenMount: true
+    roleArn: "arn:aws:iam::ACCOUNT_ID:role/ROLE_NAME"
     url: demo-backend.apps.ocp.taco.moe
     env:
-      - name: AWS_ROLE_ARN
-        value: "arn:aws:iam::ACCOUNT_ID:role/ROLE_NAME"
       - name: AWS_REGION
         value: "us-east-1"
-      - name: AWS_WEB_IDENTITY_TOKEN_FILE
-        value: "/var/run/secrets/eks.amazonaws.com/serviceaccount/token"
       - name: S3_BUCKET_NAME
         value: "your-bucket-name"
 
