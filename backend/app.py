@@ -1,8 +1,9 @@
 import os
+import json
 import random
 import boto3
 from fastapi import FastAPI, HTTPException
-from fastapi.responses import Response
+from fastapi.responses import JSONResponse, Response
 
 app = FastAPI()
 
@@ -32,6 +33,49 @@ def _random_image(prefix: str) -> Response:
     key = random.choice(objects)["Key"]
     data = s3.get_object(Bucket=BUCKET, Key=key)["Body"].read()
     return Response(content=data, media_type="image/png", headers=_NO_CACHE)
+
+
+@app.get("/debug/aws")
+def debug_aws():
+    result = {}
+
+    # Env vars
+    aws_env = {k: v for k, v in os.environ.items() if k.startswith("AWS_") or k == "S3_BUCKET_NAME"}
+    result["env"] = aws_env
+
+    # Token file
+    token_file = os.environ.get("AWS_WEB_IDENTITY_TOKEN_FILE")
+    if token_file:
+        try:
+            with open(token_file) as f:
+                token = f.read().strip()
+            # Decode middle segment (claims) without verifying signature
+            padding = 4 - len(token.split(".")[1]) % 4
+            import base64
+            claims = json.loads(base64.urlsafe_b64decode(token.split(".")[1] + "=" * padding))
+            result["token"] = {"claims": claims, "readable": True}
+        except Exception as e:
+            result["token"] = {"readable": False, "error": str(e)}
+    else:
+        result["token"] = {"readable": False, "error": "AWS_WEB_IDENTITY_TOKEN_FILE not set"}
+
+    # STS call
+    try:
+        sts = boto3.client("sts")
+        identity = sts.get_caller_identity()
+        result["sts"] = {"ok": True, "identity": identity}
+    except Exception as e:
+        result["sts"] = {"ok": False, "error": str(e)}
+
+    # S3 list
+    try:
+        s3 = boto3.client("s3")
+        resp = s3.list_objects_v2(Bucket=BUCKET, MaxKeys=5)
+        result["s3"] = {"ok": True, "key_count": resp.get("KeyCount", 0)}
+    except Exception as e:
+        result["s3"] = {"ok": False, "error": str(e)}
+
+    return JSONResponse(result)
 
 
 @app.get("/blue")

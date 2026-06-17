@@ -8,6 +8,8 @@ components:
     env:
       - name: AWS_REGION
         value: "us-east-1"
+      - name: AWS_STS_REGIONAL_ENDPOINTS
+        value: "regional"
       - name: S3_BUCKET_NAME
         value: "your-bucket-name"
 
