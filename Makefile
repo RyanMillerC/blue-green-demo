@@ -55,6 +55,7 @@ dev-build-frontend:
 .PHONY: dev-setup
 dev-setup:
 	sed "s/<your-namespace>/$(DEV_NAMESPACE)/g" $(DEV_MANIFESTS_DIR)/deployments.yaml | oc apply -f $(DEV_MANIFESTS_DIR)/imagestreams.yaml -f $(DEV_MANIFESTS_DIR)/buildconfigs.yaml -f $(DEV_MANIFESTS_DIR)/services.yaml -f $(DEV_MANIFESTS_DIR)/routes.yaml -f -
+	oc set env deployment/frontend-dev IMAGE_ENDPOINT=https://$$(oc get route backend-dev -o jsonpath='{.spec.host}')/blue
 
 .PHONY: dev-teardown
 dev-teardown:
