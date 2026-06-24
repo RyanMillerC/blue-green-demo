@@ -1,13 +1,29 @@
 import os
+import re
+import sys
 import json
 import base64
 import random
+import logging
 import threading
 from datetime import datetime, timedelta, timezone
 
 import boto3
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import JSONResponse, Response
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+_ROLE_ARN_RE = re.compile(
+    r"^arn:(?:aws|aws-cn|aws-us-gov):iam::\d{12}:role/.+$"
+)
+
+_role_arn = os.environ.get("AWS_ROLE_ARN")
+if _role_arn is not None:
+    if not _ROLE_ARN_RE.match(_role_arn):
+        logger.error("AWS_ROLE_ARN is set but invalid: %r", _role_arn)
+        sys.exit(1)
 
 app = FastAPI()
 
