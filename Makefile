@@ -18,8 +18,10 @@ help:
 	@echo "  dev-build          Build both images in OpenShift from local source"
 	@echo "  dev-build-backend  Build backend image in OpenShift from local source"
 	@echo "  dev-build-frontend Build frontend image in OpenShift from local source"
+	@echo "  dev-down           Scale dev deployments to 0 replicas"
 	@echo "  dev-setup          Apply dev manifests to current OpenShift project"
 	@echo "  dev-teardown       Delete dev manifests from current OpenShift project"
+	@echo "  dev-up             Scale dev deployments to 1 replica"
 	@echo "  dev-urls           Print dev route URLs"
 	@echo ""
 	@echo "Helm:"
@@ -61,6 +63,14 @@ dev-setup:
 dev-teardown:
 	oc delete -f $(DEV_MANIFESTS_DIR)/imagestreams.yaml -f $(DEV_MANIFESTS_DIR)/buildconfigs.yaml -f $(DEV_MANIFESTS_DIR)/services.yaml -f $(DEV_MANIFESTS_DIR)/routes.yaml
 	sed "s/<your-namespace>/$(DEV_NAMESPACE)/g" $(DEV_MANIFESTS_DIR)/deployments.yaml | oc delete -f -
+
+.PHONY: dev-up
+dev-up:
+	oc scale deployment/frontend-dev deployment/backend-dev --replicas=1
+
+.PHONY: dev-down
+dev-down:
+	oc scale deployment/frontend-dev deployment/backend-dev --replicas=0
 
 .PHONY: dev-urls
 dev-urls:
